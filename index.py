@@ -71,7 +71,7 @@ def webhook4():
         info = ""
         for doc in docs:                                                                                                                
             dict = doc.to_dict()
-            if keyword in dict["title"]:
+            if keyword in dict["keyword"]:
                 found = True 
                 info += "書名：" + dict["title"] + "\n"
                 info += "封面：" + dict["picture"] + "\n"

@@ -10,13 +10,11 @@ app = Flask(__name__)
 def index():
     x ="作者-林映均12/17<br>"
     x +="<a href=/spider2>資管導論</a><br>"
-
     return x
 
 @app.route("/spider2")
 def spider2():
     info = ""
-
     url = "https://www.xbanxia.com/list/10_1.html"
     Data = requests.get(url)
     Data.encoding = "utf-8"
@@ -29,6 +27,7 @@ def spider2():
             info += x.find("a").get("href") + "<br>"
             info += "<img src=https://www.xbanxia.com/" + x.find("img").get("src") + " width=200 height=300 " + "</img><br>"
     return info
+
 
 @app.route("/book")
 def book():
@@ -59,13 +58,26 @@ def book():
 @app.route("/webhook4", methods=["POST"])
 def webhook4():
     req = request.get_json(force=True)
-    action =  req["queryResult"]["action"]
-    if (action == "BookDetail"): #book intent action&parameters
-        keyword =  req.get("queryResult").get("parameters").get("any") 
+    action = req["queryResult"]["action"]
+    if action == "BookDetail":  # book intent action&parameters
+        keyword = req.get("queryResult").get("parameters").get("any")
         info = "我是小說聊天機器人，您要查詢關鍵字是" + keyword + "的小說\n\n"
-        
 
-        
+        db = firestore.client()
+        collection_ref = db.collection("小說")
+        docs = collection_ref.get()
+        found = False
+        info = ""
+        for doc in docs:
+            dict = doc.to_dict()
+            if keyword in dict["keyword"]:
+                found = True
+                info += "書名：" + dict["title"] + "\n"
+                info += "封面：" + dict["picture"] + "\n"
+                info += "書籍連結：" + dict["hyperlink"] + "\n"
+            if not found:
+                info += "很抱歉，目前無符合這個關鍵字的相關小說喔"
+
     return make_response(jsonify({"fulfillmentText": info}))
 
 
